@@ -21,6 +21,7 @@ from eventlet.wsgi import ALREADY_HANDLED as EVENTLET_ALREADY_HANDLED
 import greenlet
 
 from gunicorn.workers.base_async import AsyncWorker
+from gunicorn.sock import ssl_wrap_socket
 
 
 def _eventlet_socket_sendfile(self, file, offset=0, count=None):
@@ -144,9 +145,7 @@ class EventletWorker(AsyncWorker):
 
     def handle(self, listener, client, addr):
         if self.cfg.is_ssl:
-            client = eventlet.wrap_ssl(client, server_side=True,
-                                       **self.cfg.ssl_options)
-
+            client = ssl_wrap_socket(client, self.cfg)
         super().handle(listener, client, addr)
 
     def run(self):
